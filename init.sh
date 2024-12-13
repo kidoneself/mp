@@ -33,7 +33,7 @@ get_ip() {
     local ip
     # 使用 Python 获取 IP 地址，兼容不同操作系统
     ip=$(python3 -c "import socket; print(socket.gethostbyname(socket.gethostname()))")
-
+    
     if [ -z "$ip" ]; then
         echo "无法自动获取IP地址，请输入IP地址："
         read -p "请输入主机 IP 地址: " ip
@@ -154,4 +154,17 @@ init_moviepilot() {
     echo "初始化 MoviePilot"
     echo "执行命令: mkdir -p $DOCKER_ROOT_PATH/moviepilot-v2/{main,config,core}"
     mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/{main,config,core}"
-    echo "执行命令: cp config.py $DOCKER_ROOT_PATH/moviepilot
+    echo "执行命令: cp config.py $DOCKER_ROOT_PATH/moviepilot-v2/config/"
+    cp config.py "$DOCKER_ROOT_PATH/moviepilot-v2/config/"
+    echo "执行命令: docker run -d --name moviepilot --restart unless-stopped -v $DOCKER_ROOT_PATH/moviepilot-v2:/moviepilot-v2 --network host --privileged $DOCKER_REGISTRY/username/moviepilot:v1"
+    docker run -d --name moviepilot --restart unless-stopped \
+        -v "$DOCKER_ROOT_PATH/moviepilot-v2:/moviepilot-v2" \
+        --network host --privileged \
+        "$DOCKER_REGISTRY/username/moviepilot:v1"
+}
+
+# 调用安装服务
+install_service 1
+install_service 2
+install_service 3
+install_service 4
