@@ -56,9 +56,9 @@ echo "2. hub.naspt.de/"
 read -p "请输入数字选择镜像源（默认：1）：" image_choice
 
 # 默认使用 docker.naspt.de
-DOCKER_REGISTRY="docker.naspt.de"
+DOCKER_REGISTRY="docker.naspt.de/"
 if [[ "$image_choice" == "2" ]]; then
-    DOCKER_REGISTRY="hub.naspt.de"
+    DOCKER_REGISTRY="hub.naspt.de/"
 fi
 
 export DOCKER_ROOT_PATH
