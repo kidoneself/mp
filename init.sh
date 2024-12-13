@@ -71,7 +71,7 @@ echo -e "${GREEN}HOST_IP: $HOST_IP${RESET}"
 echo -e "${GREEN}DOCKER_REGISTRY: ${DOCKER_REGISTRY:-默认 Docker 镜像源}${RESET}"
 
 echo -e "${GREEN}创建安装环境中...${RESET}"
-cd ~ && mkdir -p nasmpv2 && cd nasmpv2
+
 
 # 初始化文件夹
 echo "初始化文件夹..."
