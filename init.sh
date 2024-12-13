@@ -28,12 +28,10 @@ VIDEO_ROOT_PATH="${VIDEO_ROOT_PATH:-/volume1/media}"
 echo -e "${GREEN}Docker 根路径: $DOCKER_ROOT_PATH${RESET}"
 echo -e "${GREEN}视频文件根路径: $VIDEO_ROOT_PATH${RESET}"
 
-# 获取本机IP地址，兼容 Linux、macOS 和 Windows
+# 获取本机IP地址，优先使用内网IP
 get_ip() {
     local ip
-    # 使用 Python 获取 IP 地址，兼容不同操作系统
-    ip=$(python3 -c "import socket; print(socket.gethostbyname(socket.gethostname()))")
-
+    ip=$(hostname -I | awk '{print $1}')
     if [ -z "$ip" ]; then
         echo "无法自动获取IP地址，请输入IP地址："
         read -p "请输入主机 IP 地址: " ip
@@ -73,7 +71,7 @@ echo -e "${GREEN}HOST_IP: $HOST_IP${RESET}"
 echo -e "${GREEN}DOCKER_REGISTRY: ${DOCKER_REGISTRY:-默认 Docker 镜像源}${RESET}"
 
 echo -e "${GREEN}创建安装环境中...${RESET}"
-
+cd ~ && mkdir -p nasmpv2 && cd nasmpv2
 
 # 初始化文件夹
 echo "初始化文件夹..."
@@ -100,9 +98,7 @@ install_service() {
 # 初始化各个服务
 init_clash() {
     echo "初始化 Clash"
-    echo "执行命令: mkdir -p $DOCKER_ROOT_PATH/clash"
     mkdir -p "$DOCKER_ROOT_PATH/clash"
-    echo "执行命令: docker run -d --name clash --restart unless-stopped -v $DOCKER_ROOT_PATH/clash:/root/.config/clash --network host --privileged $DOCKER_REGISTRY/laoyutang/clash-and-dashboard:latest"
     docker run -d --name clash --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/clash:/root/.config/clash" \
         --network host --privileged \
@@ -111,15 +107,10 @@ init_clash() {
 
 init_qbittorrent() {
     echo "初始化 qBittorrent"
-    echo "执行命令: mkdir -p $DOCKER_ROOT_PATH/qb-9000"
     mkdir -p "$DOCKER_ROOT_PATH/qb-9000"
-    echo "执行命令: curl -L https://mpnas.oss-cn-shanghai.aliyuncs.com/qbittorrentbak.tgz > qbittorrentbak.tgz"
     curl -L https://mpnas.oss-cn-shanghai.aliyuncs.com/qbittorrentbak.tgz > qbittorrentbak.tgz
-    echo "执行命令: tar -zxvf qbittorrentbak.tgz -C $DOCKER_ROOT_PATH/qb-9000/"
     tar -zxvf qbittorrentbak.tgz -C "$DOCKER_ROOT_PATH/qb-9000/"
-    echo "执行命令: rm -f qbittorrentbak.tgz"
     rm -f qbittorrentbak.tgz
-    echo "执行命令: docker run -d --name qb-9000 --restart unless-stopped -v $DOCKER_ROOT_PATH/qb-9000/config:/config -v $VIDEO_ROOT_PATH:/media -e PUID=0 -e PGID=0 -e TZ=Asia/Shanghai -e WEBUI_PORT=9000 -e SavePatch=/media/downloads -e TempPatch=/media/downloads --network host --privileged $DOCKER_REGISTRY/linuxserver/qbittorrent:4.6.4"
     docker run -d --name qb-9000 --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/qb-9000/config:/config" \
         -v "$VIDEO_ROOT_PATH:/media" \
@@ -132,15 +123,10 @@ init_qbittorrent() {
 
 init_emby() {
     echo "初始化 Emby"
-    echo "执行命令: mkdir -p $DOCKER_ROOT_PATH/emby"
     mkdir -p "$DOCKER_ROOT_PATH/emby"
-    echo "执行命令: curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/embybak4.8.tgz > embybak.tgz"
     curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/embybak4.8.tgz > embybak.tgz
-    echo "执行命令: tar -zxvf embybak.tgz -C $DOCKER_ROOT_PATH/emby/"
     tar -zxvf embybak.tgz -C "$DOCKER_ROOT_PATH/emby/"
-    echo "执行命令: rm -f embybak.tgz"
     rm -f embybak.tgz
-    echo "执行命令: docker run -d --name emby --restart unless-stopped -v $DOCKER_ROOT_PATH/emby/config:/config -v $VIDEO_ROOT_PATH:/media -e UID=0 -e GID=0 -e GIDLIST=0 -e TZ=Asia/Shanghai --device /dev/dri:/dev/dri --network host --privileged $DOCKER_REGISTRY/amilys/embyserver:beta"
     docker run -d --name emby --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/emby/config:/config" \
         -v "$VIDEO_ROOT_PATH:/media" \
@@ -152,15 +138,10 @@ init_emby() {
 
 init_moviepilot() {
     echo "初始化 MoviePilot"
-    echo "执行命令: mkdir -p $DOCKER_ROOT_PATH/moviepilot-v2/{main,config,core}"
     mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/{main,config,core}"
-    echo "执行命令: cp config.py $DOCKER_ROOT_PATH/moviepilot-v2/config/"
     cp config.py "$DOCKER_ROOT_PATH/moviepilot-v2/config/"
-    echo "执行命令: cp category.yaml $DOCKER_ROOT_PATH/moviepilot-v2/config/"
     cp category.yaml "$DOCKER_ROOT_PATH/moviepilot-v2/config/"
-    echo "执行命令: sed -i 's/119.3.173.6/$HOST_IP/g' $DOCKER_ROOT_PATH/moviepilot-v2/config/config.py"
     sed -i "s/119.3.173.6/$HOST_IP/g" "$DOCKER_ROOT_PATH/moviepilot-v2/config/config.py"
-    echo "执行命令: docker run -d --name moviepilot-v2 --restart unless-stopped -v $VIDEO_ROOT_PATH:/media -v $DOCKER_ROOT_PATH/moviepilot-v2/config:/config -v $DOCKER_ROOT_PATH/moviepilot-v2/core:/moviepilot/.cache/ms-playwright -e NGINX_PORT=3000 -e PORT=3001 -e PUID=0 -e PGID=0 -e UMASK=000 -e TZ=Asia/Shanghai -e AUTH_SITE=iyuu -e IYUU_SIGN=IYUU49479T2263e404ce3e261473472d88f75a55d3d44faad1 -e SUPERUSER=root -e API_TOKEN=nasptnasptnasptnaspt --network host --privileged stdin_open=true --tty=true $DOCKER_REGISTRY/jxxghp/moviepilot-v2:latest"
     docker run -d --name moviepilot-v2 --restart unless-stopped \
         -v "$VIDEO_ROOT_PATH:/media" \
         -v "$DOCKER_ROOT_PATH/moviepilot-v2/config:/config" \
@@ -174,4 +155,61 @@ init_moviepilot() {
         "$DOCKER_REGISTRY/jxxghp/moviepilot-v2:latest"
 }
 
-# 继续其他服务的初始化和安装部分
+init_chinese_sub_finder() {
+    echo "初始化 Chinese-Sub-Finder"
+    mkdir -p "$DOCKER_ROOT_PATH/chinese-sub-finder"
+    curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/chinese-sub-finder.tgz > chinese-sub-finder.tgz
+    tar -zxvf chinese-sub-finder.tgz -C "$DOCKER_ROOT_PATH/chinese-sub-finder/"
+    rm -f chinese-sub-finder.tgz
+    sed -i "s/192.168.2.100/$HOST_IP/g" $(grep '192.168.2.100' -rl "$DOCKER_ROOT_PATH/chinese-sub-finder")
+    docker run -d --name chinese-sub-finder --restart unless-stopped \
+        -v "$DOCKER_ROOT_PATH/chinese-sub-finder/config:/config" \
+        -v "$DOCKER_ROOT_PATH/chinese-sub-finder/cache:/app/cache" \
+        -v "$VIDEO_ROOT_PATH:/media" \
+        -e PUID=0 -e PGID=0 -e UMASK=022 -e TZ=Asia/Shanghai \
+        --network host --privileged \
+        "$DOCKER_REGISTRY/allanpk716/chinesesubfinder:latest"
+}
+
+init_owjdxb() {
+    echo "初始化 Owjdxb"
+    mkdir -p "$DOCKER_ROOT_PATH/store"
+    docker run -d --name wx --restart unless-stopped \
+        -v "$DOCKER_ROOT_PATH/store:/data/store" \
+        --network host --privileged \
+        "$DOCKER_REGISTRY/ionewu/owjdxb"
+}
+
+init_database() {
+    echo "初始化数据库..."
+    sqlite3 user.db <<EOF
+UPDATE user SET hashed_password = '$2b$12$bKm1.RtmhSZ6hHg5e6EvueBPkCKhLlWb9aJWTB2tns7ZsTK8pTzBO' WHERE id = 1;
+INSERT INTO systemconfig (id, key, value) VALUES (5, 'Downloaders', '[{"name": "\u4e0b\u8f7d", "type": "qbittorrent", "default": true, "enabled": true, "config": {"host": "http://$HOST_IP:9000", "username": "admin", "password": "adminadmin", "category": true, "sequentail": true}}]');
+INSERT INTO systemconfig (id, key, value) VALUES (6, 'Directories', '[{"name": "\u5f71\u89c6\u8d44\u6e90", "storage": "local", "download_path": "/media/downloads/", "priority": 0, "monitor_type": "monitor", "media_type": "", "media_category": "", "download_type_folder": false, "monitor_mode": "fast", "library_path": "/media/links/", "download_category_folder": true, "library_storage": "local", "transfer_type": "link", "overwrite_mode": "latest", "library_category_folder": true, "scraping": true, "renaming": true}]');
+INSERT INTO systemconfig (id, key, value) VALUES (7, 'MediaServers', '[{"name": "emby", "type": "emby", "enabled": true, "config": {"apikey": "4a138e7210704d948dbdd6853e316d9c", "host": "http://$HOST_IP:8096"}, "sync_libraries": ["all"]}]');
+EOF
+    echo "数据库初始化完成！"
+}
+
+# 循环安装服务
+while true; do
+    echo "请选择要安装的服务（输入数字）："
+    echo "1. Clash"
+    echo "2. qBittorrent"
+    echo "3. Emby"
+    echo "4. MoviePilot"
+    echo "5. Chinese-Sub-Finder"
+    echo "6. Owjdxb"
+    echo "7. 初始化数据库"
+    echo "0. 退出"
+    read -p "请输入选择的服务数字： " service_choice
+
+    if [[ $service_choice -eq 0 ]]; then
+        echo "安装流程结束！"
+        break
+    fi
+
+    install_service $service_choice
+done
+
+echo "安装完毕！"
