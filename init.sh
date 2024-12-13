@@ -33,7 +33,7 @@ get_ip() {
     local ip
     # 使用 Python 获取 IP 地址，兼容不同操作系统
     ip=$(python3 -c "import socket; print(socket.gethostbyname(socket.gethostname()))")
-    
+
     if [ -z "$ip" ]; then
         echo "无法自动获取IP地址，请输入IP地址："
         read -p "请输入主机 IP 地址: " ip
@@ -73,7 +73,7 @@ echo -e "${GREEN}HOST_IP: $HOST_IP${RESET}"
 echo -e "${GREEN}DOCKER_REGISTRY: ${DOCKER_REGISTRY:-默认 Docker 镜像源}${RESET}"
 
 echo -e "${GREEN}创建安装环境中...${RESET}"
-cd ~ && mkdir -p nasmpv2 && cd nasmpv2
+
 
 # 初始化文件夹
 echo "初始化文件夹..."
