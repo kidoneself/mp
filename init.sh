@@ -51,8 +51,8 @@ done
 
 # 用户选择镜像源
 echo "请选择 Docker 镜像源："
-echo "1. docker.naspt.de"
-echo "2. hub.naspt.de"
+echo "1. docker.naspt.de/"
+echo "2. hub.naspt.de/"
 read -p "请输入数字选择镜像源（默认：1）：" image_choice
 
 # 默认使用 docker.naspt.de
@@ -84,7 +84,7 @@ install_service() {
         docker run -d --name clash --restart unless-stopped \
             -v $DOCKER_ROOT_PATH/clash:/root/.config/clash \
             --network host --privileged \
-            $DOCKER_REGISTRY/laoyutang/clash-and-dashboard:latest
+            $DOCKER_REGISTRYlaoyutang/clash-and-dashboard:latest
         ;;
     2)
         echo "初始化 qBittorrent"
@@ -99,7 +99,7 @@ install_service() {
             -e WEBUI_PORT=9000 \
             -e SavePatch=/media/downloads -e TempPatch=/media/downloads \
             --network host --privileged \
-            $DOCKER_REGISTRY/linuxserver/qbittorrent:4.6.4
+            $DOCKER_REGISTRYlinuxserver/qbittorrent:4.6.4
         ;;
     3)
         echo "初始化 Emby"
@@ -113,7 +113,7 @@ install_service() {
             -e UID=0 -e GID=0 -e GIDLIST=0 -e TZ=Asia/Shanghai \
             --device /dev/dri:/dev/dri \
             --network host --privileged \
-            $DOCKER_REGISTRY/amilys/embyserver:beta
+            $DOCKER_REGISTRYamilys/embyserver:beta
         ;;
     4)
         echo "初始化 MoviePilot"
@@ -131,7 +131,7 @@ install_service() {
             -e SUPERUSER=root -e API_TOKEN=nasptnasptnasptnaspt \
             --network host --privileged \
             stdin_open=true --tty=true \
-            $DOCKER_REGISTRY/jxxghp/moviepilot-v2:latest
+            $DOCKER_REGISTRYjxxghp/moviepilot-v2:latest
         ;;
     5)
         echo "初始化 Chinese-Sub-Finder"
@@ -146,7 +146,7 @@ install_service() {
             -v $VIDEO_ROOT_PATH:/media \
             -e PUID=0 -e PGID=0 -e UMASK=022 -e TZ=Asia/Shanghai \
             --network host --privileged \
-            $DOCKER_REGISTRY/allanpk716/chinesesubfinder:latest
+            $DOCKER_REGISTRYallanpk716/chinesesubfinder:latest
         ;;
     6)
         echo "初始化 Owjdxb"
@@ -154,7 +154,7 @@ install_service() {
         docker run -d --name wx --restart unless-stopped \
             -v $DOCKER_ROOT_PATH/store:/data/store \
             --network host --privileged \
-            $DOCKER_REGISTRY/ionewu/owjdxb
+            $DOCKER_REGISTRYionewu/owjdxb
         ;;
     7)
         echo "初始化数据库..."
