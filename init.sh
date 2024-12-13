@@ -28,47 +28,39 @@ VIDEO_ROOT_PATH="${VIDEO_ROOT_PATH:-/volume1/media}"
 echo -e "${GREEN}Docker 根路径: $DOCKER_ROOT_PATH${RESET}"
 echo -e "${GREEN}视频文件根路径: $VIDEO_ROOT_PATH${RESET}"
 
-# 获取本机IP地址，优先使用内网IP
-get_ip() {
-    local ip
-    ip=$(hostname -I | awk '{print $1}')
-    if [ -z "$ip" ]; then
-        echo "无法自动获取IP地址，请输入IP地址："
-        read -p "请输入主机 IP 地址: " ip
-    fi
-    echo "$ip"
+# 确保用户输入的变量不为空，否则要求重新输入
+get_input() {
+    local var_name=$1
+    local prompt_message=$2
+    local default_value=$3
+    local value
+    while [ -z "$value" ]; do
+        read -p "$prompt_message ($default_value): " value
+        value="${value:-$default_value}"
+        eval $var_name=$value
+    done
 }
 
-# 获取主机IP
-HOST_IP=$(get_ip)
+get_input "DOCKER_ROOT_PATH" "请输入 Docker 根路径" "$DOCKER_ROOT_PATH"
+get_input "VIDEO_ROOT_PATH" "请输入视频文件根路径" "$VIDEO_ROOT_PATH"
+get_input "HOST_IP" "请输入主机 IP 地址" ""
 
 # 用户选择镜像源
 echo "请选择 Docker 镜像源："
 echo "1. docker.naspt.de"
 echo "2. hub.naspt.de"
-echo "3. 不使用镜像加速（有梯子）"
 read -p "请输入数字选择镜像源（默认：1）：" image_choice
 
-# 设置镜像源和加速设置
-DOCKER_REGISTRY="docker.naspt.de/"
+# 默认使用 docker.naspt.de
+DOCKER_REGISTRY="docker.naspt.de"
 if [[ "$image_choice" == "2" ]]; then
-    DOCKER_REGISTRY="hub.naspt.de/"
-elif [[ "$image_choice" == "3" ]]; then
-    echo -e "${GREEN}选择了不使用加速（有梯子），将使用默认 Docker 镜像源${RESET}"
-    unset DOCKER_REGISTRY  # 如果选择不使用加速，则取消加速变量
+    DOCKER_REGISTRY="hub.naspt.de"
 fi
 
 export DOCKER_ROOT_PATH
 export VIDEO_ROOT_PATH
 export HOST_IP
 export DOCKER_REGISTRY
-
-# 显示环境变量
-echo -e "${GREEN}当前环境变量：${RESET}"
-echo -e "${GREEN}DOCKER_ROOT_PATH: $DOCKER_ROOT_PATH${RESET}"
-echo -e "${GREEN}VIDEO_ROOT_PATH: $VIDEO_ROOT_PATH${RESET}"
-echo -e "${GREEN}HOST_IP: $HOST_IP${RESET}"
-echo -e "${GREEN}DOCKER_REGISTRY: ${DOCKER_REGISTRY:-默认 Docker 镜像源}${RESET}"
 
 echo -e "${GREEN}创建安装环境中...${RESET}"
 cd ~ && mkdir -p nasmpv2 && cd nasmpv2
@@ -109,8 +101,8 @@ init_qbittorrent() {
     echo "初始化 qBittorrent"
     mkdir -p "$DOCKER_ROOT_PATH/qb-9000"
     curl -L https://mpnas.oss-cn-shanghai.aliyuncs.com/qbittorrentbak.tgz > qbittorrentbak.tgz
-    tar -zxvf qbittorrentbak.tgz -C "$DOCKER_ROOT_PATH/qb-9000/"
-    rm -f qbittorrentbak.tgz
+    tar -zxvf qbittorrentbak.tgz
+    cp -rf ~/nasmpv2/qbittorrent/* "$DOCKER_ROOT_PATH/qb-9000/"
     docker run -d --name qb-9000 --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/qb-9000/config:/config" \
         -v "$VIDEO_ROOT_PATH:/media" \
@@ -125,8 +117,8 @@ init_emby() {
     echo "初始化 Emby"
     mkdir -p "$DOCKER_ROOT_PATH/emby"
     curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/embybak4.8.tgz > embybak.tgz
-    tar -zxvf embybak.tgz -C "$DOCKER_ROOT_PATH/emby/"
-    rm -f embybak.tgz
+    tar -zxvf embybak.tgz
+    cp -rf ~/nasmpv2/emby/* "$DOCKER_ROOT_PATH/emby/"
     docker run -d --name emby --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/emby/config:/config" \
         -v "$VIDEO_ROOT_PATH:/media" \
@@ -159,8 +151,8 @@ init_chinese_sub_finder() {
     echo "初始化 Chinese-Sub-Finder"
     mkdir -p "$DOCKER_ROOT_PATH/chinese-sub-finder"
     curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/chinese-sub-finder.tgz > chinese-sub-finder.tgz
-    tar -zxvf chinese-sub-finder.tgz -C "$DOCKER_ROOT_PATH/chinese-sub-finder/"
-    rm -f chinese-sub-finder.tgz
+    tar -zxvf chinese-sub-finder.tgz
+    cp -rf ~/nasmpv2/chinese-sub-finder/* "$DOCKER_ROOT_PATH/chinese-sub-finder/"
     sed -i "s/192.168.2.100/$HOST_IP/g" $(grep '192.168.2.100' -rl "$DOCKER_ROOT_PATH/chinese-sub-finder")
     docker run -d --name chinese-sub-finder --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/chinese-sub-finder/config:/config" \
