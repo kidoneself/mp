@@ -15,10 +15,27 @@ echo "
 #############################################
 "
 
-# 用户手动输入根路径和 IP
-read -p "请输入 Docker 根路径（如 /root/docker）： " DOCKER_ROOT_PATH
-read -p "请输入视频文件根路径（如 /root/videos）： " VIDEO_ROOT_PATH
-read -p "请输入主机 IP 地址： " HOST_IP
+# 确保用户输入的变量不为空，否则要求重新输入
+while [ -z "$DOCKER_ROOT_PATH" ]; do
+    read -p "请输入 Docker 根路径（如 /root/docker）： " DOCKER_ROOT_PATH
+    if [ -z "$DOCKER_ROOT_PATH" ]; then
+        echo "Docker 根路径不能为空，请重新输入。"
+    fi
+done
+
+while [ -z "$VIDEO_ROOT_PATH" ]; do
+    read -p "请输入视频文件根路径（如 /root/videos）： " VIDEO_ROOT_PATH
+    if [ -z "$VIDEO_ROOT_PATH" ]; then
+        echo "视频文件根路径不能为空，请重新输入。"
+    fi
+done
+
+while [ -z "$HOST_IP" ]; do
+    read -p "请输入主机 IP 地址： " HOST_IP
+    if [ -z "$HOST_IP" ]; then
+        echo "主机 IP 地址不能为空，请重新输入。"
+    fi
+done
 
 export DOCKER_ROOT_PATH
 export VIDEO_ROOT_PATH
