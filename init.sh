@@ -46,24 +46,65 @@ cd ~ && mkdir -p nasmpv2 && cd nasmpv2
 
 # 拉取安装文件
 echo "拉取安装文件"
-curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/install_bash.sh > install_bash.sh
-curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/install.sh > install.sh
-chmod a+x install.sh install_bash.sh
+if [ ! -f "install_bash.sh" ]; then
+    curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/install_bash.sh > install_bash.sh
+    chmod a+x install_bash.sh
+else
+    echo "install_bash.sh 已存在，跳过下载。"
+fi
 
-# 拉取配置
+if [ ! -f "install.sh" ]; then
+    curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/install.sh > install.sh
+    chmod a+x install.sh
+else
+    echo "install.sh 已存在，跳过下载。"
+fi
+
+# 拉取配置文件
 echo "拉取配置文件"
-curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/.env > .env
-curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/docker-compose.yml > docker-compose.yml
-curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/config.py > config.py
-curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/script.sql > script.sql
-curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/category.yaml > category.yaml
-curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/config.sh > config.sh
-chmod a+x config.sh
+if [ ! -f ".env" ]; then
+    curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/.env > .env
+else
+    echo ".env 已存在，跳过下载。"
+fi
+
+if [ ! -f "docker-compose.yml" ]; then
+    curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/docker-compose.yml > docker-compose.yml
+else
+    echo "docker-compose.yml 已存在，跳过下载。"
+fi
+
+if [ ! -f "config.py" ]; then
+    curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/config.py > config.py
+else
+    echo "config.py 已存在，跳过下载。"
+fi
+
+if [ ! -f "script.sql" ]; then
+    curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/script.sql > script.sql
+else
+    echo "script.sql 已存在，跳过下载。"
+fi
+
+if [ ! -f "category.yaml" ]; then
+    curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/category.yaml > category.yaml
+else
+    echo "category.yaml 已存在，跳过下载。"
+fi
+
+if [ ! -f "config.sh" ]; then
+    curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/config.sh > config.sh
+    chmod a+x config.sh
+else
+    echo "config.sh 已存在，跳过下载。"
+fi
 
 # 安装 docker-compose
 if [ ! -f "./docker-compose" ]; then
     curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/docker-compose > docker-compose
     chmod a+x docker-compose
+else
+    echo "docker-compose 已存在，跳过下载。"
 fi
 
 # 初始化文件夹
