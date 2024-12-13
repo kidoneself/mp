@@ -28,22 +28,19 @@ VIDEO_ROOT_PATH="${VIDEO_ROOT_PATH:-/volume1/media}"
 echo -e "${GREEN}Docker 根路径: $DOCKER_ROOT_PATH${RESET}"
 echo -e "${GREEN}视频文件根路径: $VIDEO_ROOT_PATH${RESET}"
 
-# 确保用户输入的变量不为空，否则要求重新输入
-get_input() {
-    local var_name=$1
-    local prompt_message=$2
-    local default_value=$3
-    local value
-    while [ -z "$value" ]; do
-        read -p "$prompt_message ($default_value): " value
-        value="${value:-$default_value}"
-        eval $var_name=$value
-    done
+# 获取本机IP地址，优先使用内网IP
+get_ip() {
+    local ip
+    ip=$(hostname -I | awk '{print $1}')
+    if [ -z "$ip" ]; then
+        echo "无法自动获取IP地址，请输入IP地址："
+        read -p "请输入主机 IP 地址: " ip
+    fi
+    echo "$ip"
 }
 
-get_input "DOCKER_ROOT_PATH" "请输入 Docker 根路径" "$DOCKER_ROOT_PATH"
-get_input "VIDEO_ROOT_PATH" "请输入视频文件根路径" "$VIDEO_ROOT_PATH"
-get_input "HOST_IP" "请输入主机 IP 地址" ""
+# 获取主机IP
+HOST_IP=$(get_ip)
 
 # 用户选择镜像源
 echo "请选择 Docker 镜像源："
