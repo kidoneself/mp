@@ -20,13 +20,6 @@ RED="\033[31m"
 GREEN="\033[32m"
 RESET="\033[0m"
 
-# 设置默认路径
-DOCKER_ROOT_PATH="${DOCKER_ROOT_PATH:-/volume1/docker}"
-VIDEO_ROOT_PATH="${VIDEO_ROOT_PATH:-/volume1/media}"
-
-# 其他脚本内容保持不变
-
-
 # 确保用户输入的变量不为空，否则要求重新输入
 while [ -z "$DOCKER_ROOT_PATH" ]; do
     read -p "请输入 Docker 根路径（如 /volume1/docker）： " DOCKER_ROOT_PATH
@@ -51,14 +44,14 @@ done
 
 # 用户选择镜像源
 echo "请选择 Docker 镜像源："
-echo "1. docker.naspt.de/"
-echo "2. hub.naspt.de/"
+echo "1. docker.naspt.de"
+echo "2. hub.naspt.de"
 read -p "请输入数字选择镜像源（默认：1）：" image_choice
 
 # 默认使用 docker.naspt.de
-DOCKER_REGISTRY="docker.naspt.de/"
+DOCKER_REGISTRY="docker.naspt.de"
 if [[ "$image_choice" == "2" ]]; then
-    DOCKER_REGISTRY="hub.naspt.de/"
+    DOCKER_REGISTRY="hub.naspt.de"
 fi
 
 export DOCKER_ROOT_PATH
@@ -69,6 +62,21 @@ export DOCKER_REGISTRY
 echo -e "${GREEN}创建安装环境中...${RESET}"
 cd ~ && mkdir -p nasmpv2 && cd nasmpv2
 
+# 下载文件
+echo "下载必要文件..."
+if [ ! -f "category.yaml" ]; then
+    curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/category.yaml > category.yaml
+else
+    echo "category.yaml 已存在，跳过下载。"
+fi
+
+# 安装 docker-compose
+if [ ! -f "./docker-compose" ]; then
+    curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/docker-compose > docker-compose
+    chmod a+x docker-compose
+else
+    echo "docker-compose 已存在，跳过下载。"
+fi
 
 # 初始化文件夹
 echo "初始化文件夹..."
@@ -84,7 +92,7 @@ install_service() {
         docker run -d --name clash --restart unless-stopped \
             -v $DOCKER_ROOT_PATH/clash:/root/.config/clash \
             --network host --privileged \
-            $DOCKER_REGISTRYlaoyutang/clash-and-dashboard:latest
+            $DOCKER_REGISTRY/laoyutang/clash-and-dashboard:latest
         ;;
     2)
         echo "初始化 qBittorrent"
@@ -99,7 +107,7 @@ install_service() {
             -e WEBUI_PORT=9000 \
             -e SavePatch=/media/downloads -e TempPatch=/media/downloads \
             --network host --privileged \
-            $DOCKER_REGISTRYlinuxserver/qbittorrent:4.6.4
+            $DOCKER_REGISTRY/linuxserver/qbittorrent:4.6.4
         ;;
     3)
         echo "初始化 Emby"
@@ -113,14 +121,15 @@ install_service() {
             -e UID=0 -e GID=0 -e GIDLIST=0 -e TZ=Asia/Shanghai \
             --device /dev/dri:/dev/dri \
             --network host --privileged \
-            $DOCKER_REGISTRYamilys/embyserver:beta
+            $DOCKER_REGISTRY/amilys/embyserver:beta
         ;;
     4)
         echo "初始化 MoviePilot"
         mkdir -p $DOCKER_ROOT_PATH/moviepilot-v2/{main,config,core}
         cp config.py $DOCKER_ROOT_PATH/moviepilot-v2/config/
         cp category.yaml $DOCKER_ROOT_PATH/moviepilot-v2/config/
-        sed -i "s/119.3.173.6/$HOST_IP/g" $DOCKER_ROOT_PATH/moviepilot-v2/config/config.py
+        cp script.sql $DOCKER_ROOT_PATH/moviepilot-v2/config/
+        sed -i "s/119.3.173.6/$HOST_IP/g" `grep '119.3.173.6' -rl $DOCKER_ROOT_PATH/moviepilot-v2/config/script.sql`
         docker run -d --name moviepilot-v2 --restart unless-stopped \
             -v $VIDEO_ROOT_PATH:/media \
             -v $DOCKER_ROOT_PATH/moviepilot-v2/config:/config \
@@ -131,7 +140,7 @@ install_service() {
             -e SUPERUSER=root -e API_TOKEN=nasptnasptnasptnaspt \
             --network host --privileged \
             stdin_open=true --tty=true \
-            $DOCKER_REGISTRYjxxghp/moviepilot-v2:latest
+            $DOCKER_REGISTRY/jxxghp/moviepilot-v2:latest
         ;;
     5)
         echo "初始化 Chinese-Sub-Finder"
@@ -146,7 +155,7 @@ install_service() {
             -v $VIDEO_ROOT_PATH:/media \
             -e PUID=0 -e PGID=0 -e UMASK=022 -e TZ=Asia/Shanghai \
             --network host --privileged \
-            $DOCKER_REGISTRYallanpk716/chinesesubfinder:latest
+            $DOCKER_REGISTRY/allanpk716/chinesesubfinder:latest
         ;;
     6)
         echo "初始化 Owjdxb"
@@ -154,16 +163,11 @@ install_service() {
         docker run -d --name wx --restart unless-stopped \
             -v $DOCKER_ROOT_PATH/store:/data/store \
             --network host --privileged \
-            $DOCKER_REGISTRYionewu/owjdxb
+            $DOCKER_REGISTRY/ionewu/owjdxb
         ;;
     7)
         echo "初始化数据库..."
-        sqlite3 user.db <<EOF
-UPDATE user SET hashed_password = '$2b$12$bKm1.RtmhSZ6hHg5e6EvueBPkCKhLlWb9aJWTB2tns7ZsTK8pTzBO' WHERE id = 1;
-INSERT INTO systemconfig (id, key, value) VALUES (5, 'Downloaders', '[{"name": "\u4e0b\u8f7d", "type": "qbittorrent", "default": true, "enabled": true, "config": {"host": "http://$HOST_IP:9000", "username": "admin", "password": "adminadmin", "category": true, "sequentail": true}}]');
-INSERT INTO systemconfig (id, key, value) VALUES (6, 'Directories', '[{"name": "\u5f71\u89c6\u8d44\u6e90", "storage": "local", "download_path": "/media/downloads/", "priority": 0, "monitor_type": "monitor", "media_type": "", "media_category": "", "download_type_folder": false, "monitor_mode": "fast", "library_path": "/media/links/", "download_category_folder": true, "library_storage": "local", "transfer_type": "link", "overwrite_mode": "latest", "library_category_folder": true, "scraping": true, "renaming": true}]');
-INSERT INTO systemconfig (id, key, value) VALUES (7, 'MediaServers', '[{"name": "emby", "type": "emby", "enabled": true, "config": {"apikey": "4a138e7210704d948dbdd6853e316d9c", "host": "http://$HOST_IP:8096"}, "sync_libraries": ["all"]}]');
-EOF
+        sqlite3 user.db < script.sql
         echo "数据库初始化完成！"
         ;;
     *)
@@ -194,3 +198,5 @@ while true; do
 done
 
 echo "安装完毕！"
+
+
