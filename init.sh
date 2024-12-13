@@ -44,8 +44,8 @@ HOST_IP=$(get_ip)
 
 # 用户选择镜像源
 echo "请选择 Docker 镜像源："
-echo "1. docker.naspt.de"
-echo "2. hub.naspt.de"
+echo "1. docker.naspt.de/"
+echo "2. hub.naspt.de/"
 echo "3. 不使用镜像加速（有梯子）"
 read -p "请输入数字选择镜像源（默认：1）：" image_choice
 
@@ -98,21 +98,21 @@ install_service() {
 # 初始化各个服务
 init_clash() {
     echo "初始化 Clash"
-    mkdir -p "$DOCKER_ROOT_PATH/clash"
+    mkdir -p "$DOCKER_ROOT_PATHclash"
     docker run -d --name clash --restart unless-stopped \
-        -v "$DOCKER_ROOT_PATH/clash:/root/.config/clash" \
+        -v "$DOCKER_ROOT_PATHclash:/root/.config/clash" \
         --network host --privileged \
         "$DOCKER_REGISTRY/laoyutang/clash-and-dashboard:latest"
 }
 
 init_qbittorrent() {
     echo "初始化 qBittorrent"
-    mkdir -p "$DOCKER_ROOT_PATH/qb-9000"
+    mkdir -p "$DOCKER_ROOT_PATHqb-9000"
     curl -L https://mpnas.oss-cn-shanghai.aliyuncs.com/qbittorrentbak.tgz > qbittorrentbak.tgz
-    tar -zxvf qbittorrentbak.tgz -C "$DOCKER_ROOT_PATH/qb-9000/"
+    tar -zxvf qbittorrentbak.tgz -C "$DOCKER_ROOT_PATHqb-9000/"
     rm -f qbittorrentbak.tgz
     docker run -d --name qb-9000 --restart unless-stopped \
-        -v "$DOCKER_ROOT_PATH/qb-9000/config:/config" \
+        -v "$DOCKER_ROOT_PATHqb-9000/config:/config" \
         -v "$VIDEO_ROOT_PATH:/media" \
         -e PUID=0 -e PGID=0 -e TZ=Asia/Shanghai \
         -e WEBUI_PORT=9000 \
@@ -123,12 +123,12 @@ init_qbittorrent() {
 
 init_emby() {
     echo "初始化 Emby"
-    mkdir -p "$DOCKER_ROOT_PATH/emby"
+    mkdir -p "$DOCKER_ROOT_PATHemby"
     curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/embybak4.8.tgz > embybak.tgz
-    tar -zxvf embybak.tgz -C "$DOCKER_ROOT_PATH/emby/"
+    tar -zxvf embybak.tgz -C "$DOCKER_ROOT_PATHemby/"
     rm -f embybak.tgz
     docker run -d --name emby --restart unless-stopped \
-        -v "$DOCKER_ROOT_PATH/emby/config:/config" \
+        -v "$DOCKER_ROOT_PATHemby/config:/config" \
         -v "$VIDEO_ROOT_PATH:/media" \
         -e UID=0 -e GID=0 -e GIDLIST=0 -e TZ=Asia/Shanghai \
         --device /dev/dri:/dev/dri \
@@ -138,14 +138,14 @@ init_emby() {
 
 init_moviepilot() {
     echo "初始化 MoviePilot"
-    mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/{main,config,core}"
-    cp config.py "$DOCKER_ROOT_PATH/moviepilot-v2/config/"
-    cp category.yaml "$DOCKER_ROOT_PATH/moviepilot-v2/config/"
-    sed -i "s/119.3.173.6/$HOST_IP/g" "$DOCKER_ROOT_PATH/moviepilot-v2/config/config.py"
+    mkdir -p "$DOCKER_ROOT_PATHmoviepilot-v2/{main,config,core}"
+    cp config.py "$DOCKER_ROOT_PATHmoviepilot-v2/config/"
+    cp category.yaml "$DOCKER_ROOT_PATHmoviepilot-v2/config/"
+    sed -i "s/119.3.173.6/$HOST_IP/g" "$DOCKER_ROOT_PATHmoviepilot-v2/config/config.py"
     docker run -d --name moviepilot-v2 --restart unless-stopped \
         -v "$VIDEO_ROOT_PATH:/media" \
-        -v "$DOCKER_ROOT_PATH/moviepilot-v2/config:/config" \
-        -v "$DOCKER_ROOT_PATH/moviepilot-v2/core:/moviepilot/.cache/ms-playwright" \
+        -v "$DOCKER_ROOT_PATHmoviepilot-v2/config:/config" \
+        -v "$DOCKER_ROOT_PATHmoviepilot-v2/core:/moviepilot/.cache/ms-playwright" \
         -e NGINX_PORT=3000 -e PORT=3001 \
         -e PUID=0 -e PGID=0 -e UMASK=000 -e TZ=Asia/Shanghai \
         -e AUTH_SITE=iyuu -e IYUU_SIGN=IYUU49479T2263e404ce3e261473472d88f75a55d3d44faad1 \
@@ -157,14 +157,14 @@ init_moviepilot() {
 
 init_chinese_sub_finder() {
     echo "初始化 Chinese-Sub-Finder"
-    mkdir -p "$DOCKER_ROOT_PATH/chinese-sub-finder"
+    mkdir -p "$DOCKER_ROOT_PATHchinese-sub-finder"
     curl -L https://mpnasv2.oss-cn-shanghai.aliyuncs.com/chinese-sub-finder.tgz > chinese-sub-finder.tgz
-    tar -zxvf chinese-sub-finder.tgz -C "$DOCKER_ROOT_PATH/chinese-sub-finder/"
+    tar -zxvf chinese-sub-finder.tgz -C "$DOCKER_ROOT_PATHchinese-sub-finder/"
     rm -f chinese-sub-finder.tgz
-    sed -i "s/192.168.2.100/$HOST_IP/g" $(grep '192.168.2.100' -rl "$DOCKER_ROOT_PATH/chinese-sub-finder")
+    sed -i "s/192.168.2.100/$HOST_IP/g" $(grep '192.168.2.100' -rl "$DOCKER_ROOT_PATHchinese-sub-finder")
     docker run -d --name chinese-sub-finder --restart unless-stopped \
-        -v "$DOCKER_ROOT_PATH/chinese-sub-finder/config:/config" \
-        -v "$DOCKER_ROOT_PATH/chinese-sub-finder/cache:/app/cache" \
+        -v "$DOCKER_ROOT_PATHchinese-sub-finder/config:/config" \
+        -v "$DOCKER_ROOT_PATHchinese-sub-finder/cache:/app/cache" \
         -v "$VIDEO_ROOT_PATH:/media" \
         -e PUID=0 -e PGID=0 -e UMASK=022 -e TZ=Asia/Shanghai \
         --network host --privileged \
@@ -173,9 +173,9 @@ init_chinese_sub_finder() {
 
 init_owjdxb() {
     echo "初始化 Owjdxb"
-    mkdir -p "$DOCKER_ROOT_PATH/store"
+    mkdir -p "$DOCKER_ROOT_PATHstore"
     docker run -d --name wx --restart unless-stopped \
-        -v "$DOCKER_ROOT_PATH/store:/data/store" \
+        -v "$DOCKER_ROOT_PATHstore:/data/store" \
         --network host --privileged \
         "$DOCKER_REGISTRY/ionewu/owjdxb"
 }
