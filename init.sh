@@ -23,7 +23,6 @@ log() {
 }
 log "脚本开始运行"
 
-load_env_vars
 # 从环境变量文件加载已有的环境变量
 load_env_vars() {
        if [ -f "$ENV_FILE" ]; then
@@ -45,6 +44,7 @@ load_env_vars() {
     echo "GROUP_ID=$GROUP_ID"
     echo "USER_GROUPS=$USER_GROUPS"
 }
+load_env_vars
 
 # 写入环境变量到文件
 save_env_vars() {
