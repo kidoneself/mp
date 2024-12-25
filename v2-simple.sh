@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 # 红色文本颜色代码
 RED="\033[31m"
 GREEN="\033[32m"
@@ -136,11 +137,12 @@ init_qbittorrent() {
 
 
 init_emby() {
+    set -x
     echo "初始化 Emby"
     mkdir -p "$DOCKER_ROOT_PATH/emby"
-# 检查 embybak.tgz 是否已经存在，如果存在则跳过下载
+      # 检查 embybak.tgz 是否已经存在，如果存在则跳过下载
     if [ ! -f "embybak.tgz" ]; then
-        echo "下载 embybak4.8.tgz 文件..."
+        echo "下载 naspt-emby.tgz 文件..."
         curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-emby.tgz > "$CURRENT_DIR/naspt-emby.tgz"
     else
         echo "naspt-emby.tgz 文件已存在，跳过下载。"
