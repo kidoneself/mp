@@ -24,16 +24,6 @@ get_input() {
     while true; do
         read -p "$prompt_message ($default_value): " value
         value="${value:-$default_value}"
-
-        # 针对路径变量进行检查
-        if [[ "$var_name" == "DOCKER_ROOT_PATH" || "$var_name" == "VIDEO_ROOT_PATH" ]]; then
-            if [ ! -d "$value" ]; then
-                echo -e "${RED}路径无效或不存在，请重新输入！${RESET}"
-                continue
-            fi
-        fi
-
-        # 如果检查通过，则设置变量并退出循环
         eval "$var_name='$value'"
         break
     done
