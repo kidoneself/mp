@@ -19,18 +19,23 @@ get_input() {
     local prompt_message=$2
     local default_value=$3
     local value
-    while [ -z "$value" ]; do
+
+    while true; do
         read -p "$prompt_message ($default_value): " value
         value="${value:-$default_value}"
-        if [ "$var_name" == "DOCKER_ROOT_PATH" ] || [ "$var_name" == "VIDEO_ROOT_PATH" ]; then
-            # 检查路径是否有效
+        
+        # 针对路径变量进行检查
+        if [[ "$var_name" == "DOCKER_ROOT_PATH" || "$var_name" == "VIDEO_ROOT_PATH" ]]; then
             if [ ! -d "$value" ]; then
-                echo -e "${RED}路径无效，请重新输入。${RESET}"
-                value=""
+                echo -e "${RED}路径无效或不存在，请重新输入！${RESET}"
+                continue
             fi
         fi
+
+        # 如果检查通过，则设置变量并退出循环
+        eval "$var_name='$value'"
+        break
     done
-    eval "$var_name=$value"
 }
 
 
