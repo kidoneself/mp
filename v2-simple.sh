@@ -5,8 +5,8 @@ RED="\033[31m"
 GREEN="\033[32m"
 RESET="\033[0m"
 
-mkdir mpinstall && cd mpinstall
-CURRENT_DIR="~/mpinstall"
+mkdir naspt 
+CURRENT_DIR="~/naspt"
 echo "当前脚本运行目录为: $CURRENT_DIR"
 PUID="${PUID:-0}"
 PGID="${PGID:-0}"
@@ -119,11 +119,11 @@ init_qbittorrent() {
     # 检查 qbittorrentbak.tgz 是否已存在，如果存在则跳过下载
     if [ ! -f "naspt-qb.tgz" ]; then
         echo "下载 qbittorrentbak.tgz 文件..."
-        curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-qb.tgz -o "naspt-qb.tgz"
+        curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-qb.tgz -o "$CURRENT_DIR/naspt-qb.tgz"
     else
         echo "naspt-qb.tgz 文件已存在，跳过下载。"
     fi
-    tar -zxvf "naspt-qb.tgz" -C "$DOCKER_ROOT_PATH/qb-9000/"
+    tar -zxvf "$CURRENT_DIR/naspt-qb.tgz" -C "$DOCKER_ROOT_PATH/qb-9000/"
     docker run -d --name qb-9000 --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/qb-9000/config:/config" \
         -v "$VIDEO_ROOT_PATH:/media" \
@@ -141,11 +141,11 @@ init_emby() {
 # 检查 embybak.tgz 是否已经存在，如果存在则跳过下载
     if [ ! -f "embybak.tgz" ]; then
         echo "下载 embybak4.8.tgz 文件..."
-        curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-emby.tgz > naspt-emby.tgz
+        curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-emby.tgz > "$CURRENT_DIR/naspt-emby.tgz"
     else
         echo "naspt-emby.tgz 文件已存在，跳过下载。"
     fi
-    tar -zxvf "naspt-emby.tgz" -C "$DOCKER_ROOT_PATH/emby/"
+    tar -zxvf "$CURRENT_DIR/naspt-emby.tgz" -C "$DOCKER_ROOT_PATH/emby/"
 
     docker run -d --name emby --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/emby/config:/config" \
@@ -160,13 +160,13 @@ init_chinese_sub_finder() {
     echo "初始化 Chinese-Sub-Finder"
     mkdir -p "$DOCKER_ROOT_PATH/chinese-sub-finder"
     # 检查 naspt-csf 是否已经存在，如果存在则跳过下载
-    if [ ! -f "naspt-csf" ]; then
+    if [ ! -f "$CURRENT_DIR/naspt-csf" ]; then
         echo "下载 naspt-csf 文件..."
-        curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-csf.tgz > naspt-csf.tgz
+        curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-csf.tgz > "$CURRENT_DIR/naspt-csf.tgz"
     else
         echo "naspt-csf.tgz 文件已存在，跳过下载。"
     fi
-    tar -zxvf "naspt-csf.tgz" -C "$DOCKER_ROOT_PATH/chinese-sub-finder/"
+    tar -zxvf "$CURRENT_DIR/naspt-csf.tgz" -C "$DOCKER_ROOT_PATH/chinese-sub-finder/"
     sed -i "s/192.168.2.100/$HOST_IP/g" "$DOCKER_ROOT_PATH/chinese-sub-finder/config/ChineseSubFinderSettings.json"
     docker run -d --name chinese-sub-finder --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/chinese-sub-finder/config:/config" \
@@ -187,9 +187,9 @@ init_moviepilot() {
     echo "GITHUB_PROXY='https://mirror.ghproxy.com/'" > "$DOCKER_ROOT_PATH/moviepilot-v2/config/"app.env
 
       # 检查文件是否已成功创建并写入
-    if [ -f "app.env" ]; then
+    if [ -f "$DOCKER_ROOT_PATH/moviepilot-v2/config/app.env" ]; then
         echo "app.env 文件已成功创建并写入内容："
-        cat app.env  # 显示文件内容确认
+        cat "$DOCKER_ROOT_PATH/moviepilot-v2/config/app.env"  # 显示文件内容确认
     else
         echo "创建 app.env 文件失败！"
     fi
@@ -239,20 +239,20 @@ tv:
   剧集/欧美剧集:
 EOF
    # 检查文件是否已成功创建并写入
-    if [ -f "category.yaml" ]; then
+    if [ -f "$DOCKER_ROOT_PATH/moviepilot-v2/config/category.yaml" ]; then
         echo "category.yaml 文件已成功创建并写入内容："
-        cat category.yaml  # 显示文件内容确认
+        cat "$DOCKER_ROOT_PATH/moviepilot-v2/config/category.yaml"  # 显示文件内容确认
     else
         echo "创建 category.yaml 文件失败！"
     fi
     # 检查 core.tgz 是否已经存在，如果存在则跳过下载
     if [ ! -f "naspt-core.tgz" ]; then
         echo "下载 core.tgz 文件..."
-        curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-core.tgz -o "naspt-core.tgz"
+        curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-core.tgz -o "$CURRENT_DIR/naspt-core.tgz"
     else
         echo "naspt-core.tgz 文件已存在，跳过下载。"
     fi
-    tar -zxvf "naspt-core.tgz" -C "$DOCKER_ROOT_PATH/moviepilot-v2/"
+    tar -zxvf "$CURRENT_DIR/naspt-core.tgz" -C "$DOCKER_ROOT_PATH/moviepilot-v2/"
 
     docker run -d \
       --name moviepilot-v2 \
