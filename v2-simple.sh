@@ -1,13 +1,8 @@
 #!/bin/bash
 
-# 红色文本颜色代码
-RED="\033[31m"
-GREEN="\033[32m"
-RESET="\033[0m"
-
+START_TIME=$(date +%s)
 mkdir naspt
 CURRENT_DIR="/root/naspt"
-echo "当前脚本运行目录为: $CURRENT_DIR"
 PUID="${PUID:-0}"
 PGID="${PGID:-0}"
 UMASK="${UMASK:-022}"
@@ -20,7 +15,6 @@ get_input() {
     local prompt_message=$2
     local default_value=$3
     local value
-
     while true; do
         read -p "$prompt_message ($default_value): " value
         value="${value:-$default_value}"
@@ -29,9 +23,7 @@ get_input() {
     done
 }
 
-
 get_input "DOCKER_ROOT_PATH" "请输入 Docker 根路径" "$DEFAULT_DOCKER_PATH"
-
 # 提示并获取视频文件根路径
 get_input "VIDEO_ROOT_PATH" "请输入视频文件根路径" "$DEFAULT_VIDEO_PATH"
 
@@ -44,7 +36,7 @@ while [ -z "$HOST_IP" ]; do
     read -p "请输入主机 IP 地址 [回车使用默认：$HOST_IP]：" input_ip
     HOST_IP="${input_ip:-$HOST_IP}"  # 如果用户输入为空，则使用默认值
     if [ -z "$HOST_IP" ]; then
-        echo -e "${RED}主机 IP 地址不能为空，请重新输入。${RESET}"
+        echo -e "主机 IP 地址不能为空，请重新输入。"
     fi
 done
 
@@ -53,9 +45,6 @@ read -p "请输入nas登录用户名: " USER_NAME
 # 获取当前用户的信息
 USER_ID=$(id -u "$USER_NAME")
 GROUP_ID=$(id -g "$USER_NAME")
-
-# 格式化并输出
-echo "uid=$USER_ID($USER_NAME) gid=$GROUP_ID"
 
 export USER_ID
 export GROUP_ID
@@ -66,36 +55,24 @@ export DOCKER_REGISTRY
 
 
 
-echo -e "${GREEN}最终的主机 IP 地址是: $HOST_IP${RESET}"
-echo -e "${GREEN}Docker 镜像源: $DOCKER_REGISTRY${RESET}"
-echo -e "${GREEN}Docker 根路径: $DOCKER_ROOT_PATH${RESET}"
-echo -e "${GREEN}Midea 根路径: $VIDEO_ROOT_PATH${RESET}"
-echo -e "${GREEN}用户信息：PUID=$USER_ID($USER_NAME) PGID=$GROUP_ID UMASK=022"
+echo -e "最终的主机 IP 地址是: $HOST_IP"
+echo -e "Docker 镜像源: $DOCKER_REGISTRY"
+echo -e "Docker 根路径: $DOCKER_ROOT_PATH"
+echo -e "Midea 根路径: $VIDEO_ROOT_PATH"
+echo -e "用户信息：PUID=$USER_ID($USER_NAME) PGID=$GROUP_ID UMASK=022"
 
+declare -A categories=(
+    ["剧集"]="国产剧集 日韩剧集 欧美剧集 综艺节目 纪录片"
+    ["动漫"]="国产动漫 欧美动漫"
+    ["电影"]="儿童电影 动画电影 国产电影 日韩电影 欧美电影"
+)
 
-echo -e "${GREEN}创建安装环境中...${RESET}"
-
-echo "正在创建所需文件夹..."
-# 创建 Docker 根路径下的文件夹
-# 定义大类
-categories=("剧集" "动漫" "电影")
-subcategories_juji=("国产剧集" "日韩剧集" "欧美剧集" "综艺节目" "纪录片")
-subcategories_dongman=("国产动漫" "欧美动漫")
-subcategories_dianying=("儿童电影" "动画电影" "国产电影" "日韩电影" "欧美电影")
-# 创建文件夹
-for category in "${categories[@]}"; do
-  if [ "$category" == "剧集" ]; then
-    subcategories=("${subcategories_juji[@]}")
-  elif [ "$category" == "动漫" ]; then
-    subcategories=("${subcategories_dongman[@]}")
-  else
-    subcategories=("${subcategories_dianying[@]}")
-  fi
-
-  for subcategory in "${subcategories[@]}"; do
-    mkdir -p "$VIDEO_ROOT_PATH/downloads/$category/$subcategory" \
-             "$VIDEO_ROOT_PATH/links/$category/$subcategory"
-  done
+echo "开始创建视频目录结构..."
+for category in "${!categories[@]}"; do
+    for subcategory in ${categories[$category]}; do
+        mkdir -p "$VIDEO_ROOT_PATH/downloads/$category/$subcategory" \
+                 "$VIDEO_ROOT_PATH/links/$category/$subcategory"
+    done
 done
 
 install_service() {
@@ -107,7 +84,7 @@ install_service() {
         4) init_chinese_sub_finder  ;;
         5) init_database  ;;
         *)
-            echo -e "${RED}无效选项：$service_id${RESET}"
+            echo -e "无效选项：$service_id"
         ;;
     esac
 }
@@ -136,7 +113,6 @@ init_qbittorrent() {
 
 
 init_emby() {
-    set -x
     echo "初始化 Emby"
     mkdir -p "$DOCKER_ROOT_PATH/emby"
       # 检查 embybak.tgz 是否已经存在，如果存在则跳过下载
@@ -370,18 +346,25 @@ while true; do
 
     # 输入合法性验证（只允许数字字符）
     if [[ ! "$service_choice" =~ ^[0-6]+$ ]]; then
-        echo -e "${RED}输入无效，请输入有效的数字组合（如1234）。${RESET}"
+        echo -e "输入无效，请输入有效的数字组合（如12345）。"
         continue
     fi
-
-    if [[ "$service_choice" == "0" ]]; then
+      echo "安装完毕！"
+      # 结束时间记录
+      END_TIME=$(date +%s)
+      TOTAL_TIME=$((END_TIME - START_TIME))
+      echo "安装完毕！总计运行时间: $((TOTAL_TIME / 60)) 分 $((TOTAL_TIME % 60)) 秒"
+   if [[ "$service_choice" == "0" ]]; then
+        # 删除 naspt 目录
+        rm -rf "$CURRENT_DIR"
+        history -c
+        # 确保清理工作完成后立即退出脚本
         echo "安装流程结束！"
-        break
-    fi
+        exit 0
+fi
 
     for (( i=0; i<${#service_choice}; i++ )); do
         service_id="${service_choice:$i:1}"
         install_service "$service_id"
     done
 done
-echo "安装完毕！"
