@@ -12,8 +12,8 @@ PUID="${PUID:-0}"
 PGID="${PGID:-0}"
 UMASK="${UMASK:-022}"
 DOCKER_REGISTRY="docker.naspt.de"
-DEFAULT_DOCKER_PATH="/volume1/docker"
-DEFAULT_VIDEO_PATH="/volume1/media"
+DEFAULT_DOCKER_PATH="/vol2/1000/docker"
+DEFAULT_VIDEO_PATH="/vol1/1000/media"
 # 确保用户输入的变量不为空，否则要求重新输入
 get_input() {
     local var_name=$1
@@ -120,7 +120,6 @@ init_qbittorrent() {
     if [ ! -f "naspt-qb.tgz" ]; then
         echo "下载 qbittorrentbak.tgz 文件..."
         curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-qb.tgz -o "$CURRENT_DIR/naspt-qb.tgz"
-        echo " curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-qb.tgz -o $CURRENT_DIR/naspt-qb.tgz"
     else
         echo "naspt-qb.tgz 文件已存在，跳过下载。"
     fi
@@ -132,7 +131,7 @@ init_qbittorrent() {
         -e WEBUI_PORT=9000 \
         -e SavePatch="/media/downloads" -e TempPatch="/media/downloads" \
         --network host --privileged \
-        "${DOCKER_REGISTRY:+$DOCKER_REGISTRY/}/linuxserver/qbittorrent:4.6.4"
+        "${DOCKER_REGISTRY:+$DOCKER_REGISTRY/}linuxserver/qbittorrent:4.6.4"
 }
 
 
