@@ -124,7 +124,7 @@ init_qbittorrent() {
     else
         echo "naspt-qb.tgz 文件已存在，跳过下载。"
     fi
-    tar -zxvf "$CURRENT_DIR/naspt-qb.tgz" -C "$DOCKER_ROOT_PATH/qb-9000/"
+    tar  --strip-components=1 -zxvf "$CURRENT_DIR/naspt-qb.tgz" -C "$DOCKER_ROOT_PATH/qb-9000/"
     docker run -d --name qb-9000 --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/qb-9000/config:/config" \
         -v "$VIDEO_ROOT_PATH:/media" \
@@ -147,7 +147,7 @@ init_emby() {
     else
         echo "naspt-emby.tgz 文件已存在，跳过下载。"
     fi
-    tar -zxvf "$CURRENT_DIR/naspt-emby.tgz" -C "$DOCKER_ROOT_PATH/emby/"
+    tar  --strip-components=1 -zxvf "$CURRENT_DIR/naspt-emby.tgz" -C "$DOCKER_ROOT_PATH/emby/"
 
     docker run -d --name emby --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/emby/config:/config" \
@@ -168,7 +168,7 @@ init_chinese_sub_finder() {
     else
         echo "naspt-csf.tgz 文件已存在，跳过下载。"
     fi
-    tar -zxvf "$CURRENT_DIR/naspt-csf.tgz" -C "$DOCKER_ROOT_PATH/chinese-sub-finder/"
+    tar  --strip-components=1 -zxvf "$CURRENT_DIR/naspt-csf.tgz" -C "$DOCKER_ROOT_PATH/chinese-sub-finder/"
     sed -i "s/192.168.2.100/$HOST_IP/g" "$DOCKER_ROOT_PATH/chinese-sub-finder/config/ChineseSubFinderSettings.json"
     docker run -d --name chinese-sub-finder --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/chinese-sub-finder/config:/config" \
@@ -254,7 +254,7 @@ EOF
     else
         echo "naspt-core.tgz 文件已存在，跳过下载。"
     fi
-    tar -zxvf "$CURRENT_DIR/naspt-core.tgz" -C "$DOCKER_ROOT_PATH/moviepilot-v2/"
+    tar  --strip-components=1 -zxvf "$CURRENT_DIR/naspt-core.tgz" -C "$DOCKER_ROOT_PATH/moviepilot-v2/"
 
     docker run -d \
       --name moviepilot-v2 \
