@@ -12,7 +12,8 @@ PUID="${PUID:-0}"
 PGID="${PGID:-0}"
 UMASK="${UMASK:-022}"
 DOCKER_REGISTRY="docker.naspt.de"
-
+DEFAULT_DOCKER_PATH="/volume1/docker"
+DEFAULT_VIDEO_PATH="/volume1/media"
 # 确保用户输入的变量不为空，否则要求重新输入
 get_input() {
     local var_name=$1
@@ -23,7 +24,7 @@ get_input() {
     while true; do
         read -p "$prompt_message ($default_value): " value
         value="${value:-$default_value}"
-        
+
         # 针对路径变量进行检查
         if [[ "$var_name" == "DOCKER_ROOT_PATH" || "$var_name" == "VIDEO_ROOT_PATH" ]]; then
             if [ ! -d "$value" ]; then
@@ -39,12 +40,10 @@ get_input() {
 }
 
 
-# 提示并获取 Docker 根路径
-get_input "DOCKER_ROOT_PATH" "请输入 Docker 根路径" "例如：/volume1/docker"
+get_input "DOCKER_ROOT_PATH" "请输入 Docker 根路径" "$DEFAULT_DOCKER_PATH"
 
 # 提示并获取视频文件根路径
-get_input "VIDEO_ROOT_PATH" "请输入视频文件根路径" "例如：/volume1/media"
-
+get_input "VIDEO_ROOT_PATH" "请输入视频文件根路径" "$DEFAULT_VIDEO_PATH"
 
 # 获取 eth0 网卡的 IPv4 地址，过滤掉回环地址、Docker 地址和私有网段 172.x.x.x
 if [ -z "$HOST_IP" ]; then
