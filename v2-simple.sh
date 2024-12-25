@@ -356,17 +356,22 @@ conn.close()
 
 
 
-# 循环安装服务
 while true; do
-    echo "请选择要安装的服务（输入数字组合，如 '1234' 表示依次安装 qBittorrent、Emby、MoviePilot 和 Chinese-Sub-Finder）："
-    echo "1. qBittorrent "
-    echo "2. Emby "
-    echo "3. MoviePilot "
-    echo "4. Chinese-Sub-Finder "
-    echo "5. Owjdxb "
-    echo "6. 初始化数据库 "
+    echo "请选择要安装的服务（输入数字组合，如 '1234' 表示依次安装多个服务）："
+    echo "1. qBittorrent"
+    echo "2. Emby"
+    echo "3. MoviePilot"
+    echo "4. Chinese-Sub-Finder"
+    echo "5. Owjdxb"
+    echo "6. 初始化数据库"
     echo "0. 退出"
     read -p "请输入选择的服务数字组合： " service_choice
+
+    # 输入合法性验证（只允许数字字符）
+    if [[ ! "$service_choice" =~ ^[0-6]+$ ]]; then
+        echo -e "${RED}输入无效，请输入有效的数字组合（如1234）。${RESET}"
+        continue
+    fi
 
     if [[ "$service_choice" == "0" ]]; then
         echo "安装流程结束！"
@@ -374,8 +379,8 @@ while true; do
     fi
 
     for (( i=0; i<${#service_choice}; i++ )); do
-        service_id="${service_choice:$i:1}"  # 逐一获取每个数字
-        install_service "$service_id"       # 调用安装函数
+        service_id="${service_choice:$i:1}"
+        install_service "$service_id"
     done
 done
 echo "安装完毕！"
