@@ -5,8 +5,8 @@ RED="\033[31m"
 GREEN="\033[32m"
 RESET="\033[0m"
 
-mkdir naspt 
-CURRENT_DIR="~/naspt"
+mkdir naspt
+CURRENT_DIR="/root/naspt"
 echo "当前脚本运行目录为: $CURRENT_DIR"
 PUID="${PUID:-0}"
 PGID="${PGID:-0}"
@@ -120,6 +120,7 @@ init_qbittorrent() {
     if [ ! -f "naspt-qb.tgz" ]; then
         echo "下载 qbittorrentbak.tgz 文件..."
         curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-qb.tgz -o "$CURRENT_DIR/naspt-qb.tgz"
+        echo " curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-qb.tgz -o $CURRENT_DIR/naspt-qb.tgz"
     else
         echo "naspt-qb.tgz 文件已存在，跳过下载。"
     fi
