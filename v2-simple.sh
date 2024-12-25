@@ -101,11 +101,11 @@ done
 install_service() {
     local service_id=$1
     case "$service_id" in
-        2) init_qbittorrent  ;;
-        3) init_emby  ;;
-        4) init_moviepilot  ;;
-        5) init_chinese_sub_finder  ;;
-        6) init_database  ;;
+        1) init_moviepilot ;;
+        2) init_emby  ;;
+        3) init_qbittorrent ;;
+        4) init_chinese_sub_finder  ;;
+        5) init_database  ;;
         *)
             echo -e "${RED}无效选项：$service_id${RESET}"
         ;;
@@ -358,12 +358,11 @@ conn.close()
 
 while true; do
     echo "请选择要安装的服务（输入数字组合，如 '1234' 表示依次安装多个服务）："
-    echo "1. qBittorrent"
+    echo "1. MoviePilot"
     echo "2. Emby"
-    echo "3. MoviePilot"
+    echo "3. qBittorrent"
     echo "4. Chinese-Sub-Finder"
-    echo "5. Owjdxb"
-    echo "6. 初始化数据库"
+    echo "5. 初始化数据库"
     echo "0. 退出"
     read -p "请输入选择的服务数字组合： " service_choice
 
