@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x
 # 红色文本颜色代码
 RED="\033[31m"
 GREEN="\033[32m"
@@ -183,6 +182,7 @@ init_moviepilot() {
     echo "初始化 MoviePilot"
     mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/main"
     mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/config"
+    mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/core"
 
     echo "创建app.env..."
       # 生成 app.env 文件并写入内容
@@ -254,7 +254,7 @@ EOF
     else
         echo "naspt-core.tgz 文件已存在，跳过下载。"
     fi
-    tar  --strip-components=1 -zxvf "$CURRENT_DIR/naspt-core.tgz" -C "$DOCKER_ROOT_PATH/moviepilot-v2/"
+    tar  --strip-components=1 -zxvf "$CURRENT_DIR/naspt-core.tgz" -C "$DOCKER_ROOT_PATH/moviepilot-v2/core/"
 
     docker run -d \
       --name moviepilot-v2 \
