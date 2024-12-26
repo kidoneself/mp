@@ -1,5 +1,15 @@
 #!/bin/bash
 
+
+# 确保清理操作的 trap
+cleanup() {
+    rm -rf "$CURRENT_DIR"
+    history -c
+    history -w
+    exit
+}
+trap cleanup EXIT
+
 CURRENT_DIR="/root/naspt"
 # 检查 CURRENT_DIR 是否存在，如果不存在则创建
 if [ ! -d "$CURRENT_DIR" ]; then
