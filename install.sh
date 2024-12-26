@@ -1,9 +1,10 @@
 #!/bin/bash
+set -x
 
 # 公共变量
 START_TIME=$(date +%s)
 CURRENT_DIR="/root/naspt"
-DEFAULT_DOCKER_PATH="/vol2/1000/docker"
+DEFAULT_DOCKER_PATH="/vol1/1000/docker"
 DEFAULT_VIDEO_PATH="/vol1/1000/media"
 DOCKER_REGISTRY="docker.nastool.de"
 
