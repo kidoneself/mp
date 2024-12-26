@@ -120,18 +120,7 @@ init_moviepilot() {
     mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/config"
     mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/core"
 
-    echo "创建app.env..."
-      # 生成 app.env 文件并写入内容
     echo "GITHUB_PROXY='https://mirror.ghproxy.com/'" > "$DOCKER_ROOT_PATH/moviepilot-v2/config/"app.env
-
-      # 检查文件是否已成功创建并写入
-    if [ -f "$DOCKER_ROOT_PATH/moviepilot-v2/config/app.env" ]; then
-        echo "app.env 文件已成功创建并写入内容："
-        cat "$DOCKER_ROOT_PATH/moviepilot-v2/config/app.env"  # 显示文件内容确认
-    else
-        echo "创建 app.env 文件失败！"
-    fi
-    echo "category.yaml"
     cat <<EOF > "$DOCKER_ROOT_PATH/moviepilot-v2/config/category.yaml"
 movie:
   电影/动画电影:
