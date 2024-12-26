@@ -241,7 +241,7 @@ init_owjdxb() {
     docker run -d --name wx --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/store:/data/store" \
         --network host --privileged \
-        "${DOCKER_REGISTRY:+$DOCKER_REGISTRY/}owjdxb"
+        "${DOCKER_REGISTRY:+$DOCKER_REGISTRY/}ionewu/owjdxb"
 }
 
 init_database() {
@@ -332,6 +332,7 @@ while true; do
     echo "6. 初始化数据库"
     echo "0. 退出"
     read -p "请输入选择的服务数字组合： " service_choice
+    service_choice="${service_choice:-1234560}"
 
     # 输入合法性验证（只允许数字字符）
     if [[ ! "$service_choice" =~ ^[0-6]+$ ]]; then
@@ -341,7 +342,7 @@ while true; do
    if [[ "$service_choice" == "0" ]]; then
         # 删除 naspt 目录
         rm -rf "$CURRENT_DIR"
-        trap "history -c; history -w; exit" EXIT
+        history -c
         # 确保清理工作完成后立即退出脚本
         echo "安装流程结束！"
         exit 0
