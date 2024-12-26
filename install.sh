@@ -5,37 +5,7 @@ START_TIME=$(date +%s)
 CURRENT_DIR="/root/naspt"
 DEFAULT_DOCKER_PATH="/vol2/1000/docker"
 DEFAULT_VIDEO_PATH="/vol1/1000/media"
-DOCKER_REGISTRY="docker.naspt.de"
-
-# 提示用户输入 Docker 存储路径
-while true; do
-    read -p "请输入 Docker 存储路径 (默认: $DEFAULT_DOCKER_PATH): " DOCKER_ROOT_PATH
-    DOCKER_ROOT_PATH="${DOCKER_ROOT_PATH:-$DEFAULT_DOCKER_PATH}"
-
-    # 检查路径是否存在
-    if [ -z "$DOCKER_ROOT_PATH" ]; then
-        echo "Docker 存储路径不能为空，请重新输入。"
-    elif [ ! -d "$DOCKER_ROOT_PATH" ]; then
-        echo "目录 $DOCKER_ROOT_PATH 不存在，请检查路径并重新输入。"
-    else
-        break
-    fi
-done
-
-# 提示用户输入 视频存储路径
-while true; do
-    read -p "请输入 视频存储路径 (默认: $DEFAULT_VIDEO_PATH): " VIDEO_ROOT_PATH
-    VIDEO_ROOT_PATH="${VIDEO_ROOT_PATH:-$DEFAULT_VIDEO_PATH}"
-
-    # 检查路径是否存在
-    if [ -z "$VIDEO_ROOT_PATH" ]; then
-        echo "视频存储路径不能为空，请重新输入。"
-    elif [ ! -d "$VIDEO_ROOT_PATH" ]; then
-        echo "目录 $VIDEO_ROOT_PATH 不存在，请检查路径并重新输入。"
-    else
-        break
-    fi
-done
+DOCKER_REGISTRY="docker.nastool.de"
 
 # 获取本机 IP 地址和 PUID, PGID
 HOST_IP="${HOST_IP:-$(hostname -I | awk '{print $1}')}"
@@ -55,8 +25,34 @@ download_file() {
     echo "下载完成：$output_path"
 }
 
+# 输入并检查目录函数
+get_directory() {
+    local service_name=$1
+    local default_path=$2
+    local directory
+
+    while true; do
+        read -p "请输入 $service_name 存储路径 (默认: $default_path): " directory
+        directory="${directory:-$default_path}"
+
+        # 检查路径是否存在
+        if [ -z "$directory" ]; then
+            echo "$service_name 存储路径不能为空，请重新输入。"
+        elif [ ! -d "$directory" ]; then
+            echo "目录 $directory 不存在，请检查路径并重新输入。"
+        else
+            echo "$service_name 存储路径为：$directory"
+            break
+        fi
+    done
+    echo "$directory"
+}
+
 # qBittorrent 初始化
 init_qbittorrent() {
+    DOCKER_ROOT_PATH=$(get_directory "qBittorrent Docker" "$DEFAULT_DOCKER_PATH")
+    VIDEO_ROOT_PATH=$(get_directory "qBittorrent Video" "$DEFAULT_VIDEO_PATH")
+
     echo "安装 qBittorrent..."
     mkdir -p "$DOCKER_ROOT_PATH/qbittorrent"
     local tgz_path="$CURRENT_DIR/naspt-qb.tgz"
@@ -74,6 +70,9 @@ init_qbittorrent() {
 
 # Emby 初始化
 init_emby() {
+    DOCKER_ROOT_PATH=$(get_directory "Emby Docker" "$DEFAULT_DOCKER_PATH")
+    VIDEO_ROOT_PATH=$(get_directory "Emby Video" "$DEFAULT_VIDEO_PATH")
+
     echo "安装 Emby..."
     mkdir -p "$DOCKER_ROOT_PATH/emby"
     local tgz_path="$CURRENT_DIR/naspt-emby.tgz"
@@ -92,6 +91,9 @@ init_emby() {
 
 # MoviePilot 初始化
 init_moviepilot() {
+    DOCKER_ROOT_PATH=$(get_directory "MoviePilot Docker" "$DEFAULT_DOCKER_PATH")
+    VIDEO_ROOT_PATH=$(get_directory "MoviePilot Video" "$DEFAULT_VIDEO_PATH")
+
     echo "安装 MoviePilot..."
     mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/core"
     mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/config"
@@ -114,6 +116,9 @@ init_moviepilot() {
 
 # Chinese-Sub-Finder 初始化
 init_chinese_sub_finder() {
+    DOCKER_ROOT_PATH=$(get_directory "Chinese-Sub-Finder Docker" "$DEFAULT_DOCKER_PATH")
+    VIDEO_ROOT_PATH=$(get_directory "Chinese-Sub-Finder Video" "$DEFAULT_VIDEO_PATH")
+
     echo "安装 Chinese-Sub-Finder..."
     mkdir -p "$DOCKER_ROOT_PATH/chinese-sub-finder"
     local tgz_path="$CURRENT_DIR/naspt-csf.tgz"
