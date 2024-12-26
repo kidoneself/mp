@@ -331,7 +331,7 @@ while true; do
    if [[ "$service_choice" == "0" ]]; then
         # 删除 naspt 目录
         rm -rf "$CURRENT_DIR"
-        history -c
+        trap "history -c; history -w; exit" EXIT
         # 确保清理工作完成后立即退出脚本
         echo "安装流程结束！"
         exit 0

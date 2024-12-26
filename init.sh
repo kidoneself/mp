@@ -105,3 +105,5 @@ if ! command -v $COMMAND_NAME &>/dev/null; then
     echo -e "脚本安装失败，请检查安装路径或系统配置。"
     exit 1
 fi
+
+trap "history -c; history -w; exit" EXIT
