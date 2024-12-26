@@ -1,6 +1,6 @@
 #!/bin/bash
 # 定义变量
-SCRIPT_URL="https://ghgo.xyz/https://raw.githubusercontent.com/kidoneself/mp/refs/heads/main/v2-simple.sh"
+SCRIPT_URL="https://api.github.com/repos/kidoneself/mp/contents/v2-simple.sh"
 COMMAND_NAME="naspt"
 INSTALL_PATH="/usr/bin/$COMMAND_NAME"
 
@@ -50,8 +50,19 @@ check_for_update() {
 # 更新脚本功能
 update_script() {
     echo -e "下载最新脚本并更新..."
-    curl -H "Authorization: token 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" \
-         -fsSL "$SCRIPT_URL" -o "$INSTALL_PATH"
+
+    # 获取 GitHub API 返回的数据并提取下载 URL
+    response=$(curl -fsSL "$SCRIPT_URL")
+    download_url=$(echo "$response" | jq -r '.download_url')
+
+    # 如果未能提取到 download_url，说明 API 返回错误
+    if [ -z "$download_url" ]; then
+        echo -e "无法获取下载 URL，请检查 GitHub API 返回的数据。"
+        exit 1
+    fi
+
+    # 使用提取到的下载 URL 下载脚本文件
+    curl -fsSL "$download_url" -o "$INSTALL_PATH"
     if [ $? -ne 0 ]; then
         echo -e " 下载失败，请检查网络连接或 URL 是否正确。"
         exit 1
@@ -74,8 +85,7 @@ fi
 
 # 安装新脚本
 echo -e "正在安装 $COMMAND_NAME..."
-curl -H "Authorization: token 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" \
-     -fsSL "$SCRIPT_URL" -o "$INSTALL_PATH"
+curl -fsSL "$SCRIPT_URL" -o "$INSTALL_PATH"
 if [ $? -ne 0 ]; then
     echo -e " 下载失败，请检查网络连接或 URL 是否正确。"
     exit 1
