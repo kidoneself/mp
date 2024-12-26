@@ -1,6 +1,6 @@
 #!/bin/bash
 # 定义变量
-SCRIPT_URL="https://ghgo.xyz/https://raw.githubusercontent.com/kidoneself/mp/refs/heads/main/install.sh"
+SCRIPT_URL="https://ghgo.xyz/https://raw.githubusercontent.com/kidoneself/mp/refs/heads/main/MoviePilotAll.sh"
 COMMAND_NAME="naspt"
 INSTALL_PATH="/usr/bin/$COMMAND_NAME"
 
