@@ -22,7 +22,7 @@ get_input() {
     local default_value=$3
     local value
     while true; do
-        read -p "$prompt_message ($default_value): " value
+        read -p "$prompt_message $default_value: " value
         value="${value:-$default_value}"
         eval "$var_name='$value'"
         break
@@ -60,7 +60,7 @@ export HOST_IP
 export DOCKER_REGISTRY
 
 # 确保目录结构
-mkdir -p "$VIDEO_ROOT_PATH/downloads" "$VIDEO_ROOT_PATH/links"
+
 
 # 显示设置的配置信息
 echo -e "最终的主机 IP 地址是: $HOST_IP"
@@ -116,9 +116,27 @@ init_chinese_sub_finder() {
 
 init_moviepilot() {
     echo "初始化 MoviePilot"
-    mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/main"
-    mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/config"
-    mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/core"
+    mkdir -p "$DOCKER_ROOT_PATH/moviepilot-v2/"{main,config,core}
+    mkdir -p "$VIDEO_ROOT_PATH/downloads" "$VIDEO_ROOT_PATH/links"
+    categories=("剧集" "动漫" "电影")
+    subcategories_juji=("国产剧集" "日韩剧集" "欧美剧集" "综艺节目" "纪录片")
+    subcategories_dongman=("国产动漫" "欧美动漫")
+    subcategories_dianying=("儿童电影" "动画电影" "国产电影" "日韩电影" "欧美电影")
+    # 创建文件夹
+    for category in "${categories[@]}"; do
+      if [ "$category" == "剧集" ]; then
+        subcategories=("${subcategories_juji[@]}")
+      elif [ "$category" == "动漫" ]; then
+        subcategories=("${subcategories_dongman[@]}")
+      else
+        subcategories=("${subcategories_dianying[@]}")
+      fi
+
+      for subcategory in "${subcategories[@]}"; do
+        mkdir -p "$VIDEO_ROOT_PATH/downloads/$category/$subcategory" \
+                 "$VIDEO_ROOT_PATH/links/$category/$subcategory"
+      done
+    done
 
     echo "GITHUB_PROXY='https://mirror.ghproxy.com/'" > "$DOCKER_ROOT_PATH/moviepilot-v2/config/"app.env
     cat <<EOF > "$DOCKER_ROOT_PATH/moviepilot-v2/config/category.yaml"
@@ -206,6 +224,16 @@ EOF
   done
 }
 
+
+init_owjdxb() {
+    echo "初始化 Owjdxb"
+    mkdir -p "$DOCKER_ROOT_PATH/store"
+    docker run -d --name wx --restart unless-stopped \
+        -v "$DOCKER_ROOT_PATH/store:/data/store" \
+        --network host --privileged \
+        "${DOCKER_REGISTRY:+$DOCKER_REGISTRY/}owjdxb"
+}
+
 init_database() {
 echo 'UPDATE user SET hashed_password = "$2b$12$9Lcemwg/PNtVaegry6wY.eZL41dENcX3f9Bt.NdhxMtzAsrhv1Cey" WHERE id = 1;' > "$DOCKER_ROOT_PATH/moviepilot-v2/config/script.sql"
     echo "INSERT INTO systemconfig (id, key, value) VALUES (5, 'Downloaders', '[{\"name\": \"\\u4e0b\\u8f7d\", \"type\": \"qbittorrent\", \"default\": true, \"enabled\": true, \"config\": {\"host\": \"http://119.3.173.6:9000\", \"username\": \"admin\", \"password\": \"a123456!@\", \"category\": true, \"sequentail\": true}}]');" >> "$DOCKER_ROOT_PATH/moviepilot-v2/config/script.sql"
@@ -275,7 +303,8 @@ install_service() {
         2) init_emby ;;
         3) init_qbittorrent ;;
         4) init_chinese_sub_finder ;;
-        5) init_database ;;
+        5) init_owjdxb ;;
+        6) init_database ;;
         *)
             echo -e "无效选项：$service_id"
         ;;
@@ -284,12 +313,13 @@ install_service() {
 
 # 主菜单
 while true; do
-    echo "请选择要安装的服务（输入数字组合，如 '1234' 表示依次安装多个服务）："
+    echo "请选择要安装的服务（输入数字组合，如 '1234560' 表示依次安装多个服务）："
     echo "1. MoviePilot"
     echo "2. Emby"
     echo "3. qBittorrent"
     echo "4. Chinese-Sub-Finder"
-    echo "5. 初始化数据库"
+    echo "5. 安装微信通知"
+    echo "6. 初始化数据库"
     echo "0. 退出"
     read -p "请输入选择的服务数字组合： " service_choice
 
@@ -298,7 +328,6 @@ while true; do
         echo -e "输入无效，请输入有效的数字组合（如12345）。"
         continue
     fi
-      echo "安装完毕！"
    if [[ "$service_choice" == "0" ]]; then
         # 删除 naspt 目录
         rm -rf "$CURRENT_DIR"
@@ -314,6 +343,3 @@ fi
     done
 done
 
-END_TIME=$(date +%s)
-RUN_TIME=$((END_TIME - START_TIME))
-echo "安装完成，运行时间：$RUN_TIME 秒"
