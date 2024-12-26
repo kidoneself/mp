@@ -5,13 +5,42 @@ START_TIME=$(date +%s)
 CURRENT_DIR="/root/naspt"
 DEFAULT_DOCKER_PATH="/vol2/1000/docker"
 DEFAULT_VIDEO_PATH="/vol1/1000/media"
-DOCKER_REGISTRY="docker.nastool.de"
+DOCKER_REGISTRY="docker.naspt.de"
 
-export DOCKER_ROOT_PATH="${DOCKER_ROOT_PATH:-$DEFAULT_DOCKER_PATH}"
-export VIDEO_ROOT_PATH="${VIDEO_ROOT_PATH:-$DEFAULT_VIDEO_PATH}"
-export HOST_IP="${HOST_IP:-$(hostname -I | awk '{print $1}')}"
-export PUID="${PUID:-$(id -u)}"
-export PGID="${PGID:-$(id -g)}"
+# 提示用户输入 Docker 存储路径
+while true; do
+    read -p "请输入 Docker 存储路径 (默认: $DEFAULT_DOCKER_PATH): " DOCKER_ROOT_PATH
+    DOCKER_ROOT_PATH="${DOCKER_ROOT_PATH:-$DEFAULT_DOCKER_PATH}"
+
+    # 检查路径是否存在
+    if [ -z "$DOCKER_ROOT_PATH" ]; then
+        echo "Docker 存储路径不能为空，请重新输入。"
+    elif [ ! -d "$DOCKER_ROOT_PATH" ]; then
+        echo "目录 $DOCKER_ROOT_PATH 不存在，请检查路径并重新输入。"
+    else
+        break
+    fi
+done
+
+# 提示用户输入 视频存储路径
+while true; do
+    read -p "请输入 视频存储路径 (默认: $DEFAULT_VIDEO_PATH): " VIDEO_ROOT_PATH
+    VIDEO_ROOT_PATH="${VIDEO_ROOT_PATH:-$DEFAULT_VIDEO_PATH}"
+
+    # 检查路径是否存在
+    if [ -z "$VIDEO_ROOT_PATH" ]; then
+        echo "视频存储路径不能为空，请重新输入。"
+    elif [ ! -d "$VIDEO_ROOT_PATH" ]; then
+        echo "目录 $VIDEO_ROOT_PATH 不存在，请检查路径并重新输入。"
+    else
+        break
+    fi
+done
+
+# 获取本机 IP 地址和 PUID, PGID
+HOST_IP="${HOST_IP:-$(hostname -I | awk '{print $1}')}"
+PUID="${PUID:-$(id -u)}"
+PGID="${PGID:-$(id -g)}"
 
 # 通用下载函数
 download_file() {
