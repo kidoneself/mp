@@ -6,7 +6,7 @@ CURRENT_DIR="/root/naspt"
 PUID="${PUID:-0}"
 PGID="${PGID:-0}"
 UMASK="${UMASK:-022}"
-DOCKER_REGISTRY="docker.naspt.de"
+DOCKER_REGISTRY=""
 DEFAULT_DOCKER_PATH="/vol2/1000/docker"
 DEFAULT_VIDEO_PATH="/vol1/1000/media"
 # 确保用户输入的变量不为空，否则要求重新输入

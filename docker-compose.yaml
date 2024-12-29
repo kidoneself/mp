@@ -1,0 +1,48 @@
+version: "3"
+
+services:
+  navidrome:
+    image: deluan/navidrome:latest
+    ports:
+      - "4533:4533"
+    environment:
+      ND_SCANSCHEDULE: 1h
+      ND_LOGLEVEL: info
+      ND_BASEURL: ""
+      ND_SPOTIFY_ID: d5fffcb6f90040f2a817430d85694ba7
+      ND_SPOTIFY_SECRET: 172ee57bd6aa4b9d9f30f8a9311b91ed
+      ND_LASTFM_APIKEY: 842597b59804a3c4eb4f0365db458561
+      ND_LASTFM_SECRET: aee9306d8d005de81405a37ec848983c
+      ND_LASTFM_LANGUAGE: zh
+    volumes:
+      - "/vol1/1000/docker/navidrome/data:/data"
+      - "/vol1/1000/music:/music"
+  lyricapi:
+    ports:
+      - 28883:28883
+    volumes:
+      - /vol1/1000/music:/music
+    image: hisatri/lyricapi
+  music-tag:
+    image: xhongc/music_tag_web:latest
+    container_name: music-tag-web
+    ports:
+      - "8002:8002"
+    volumes:
+      - /vol1/1000/music:/app/media
+      - /vol1/1000/docker/musictag2:/app/data
+    restart: always
+  beets:
+    image: lscr.io/linuxserver/beets:latest
+    container_name: beets
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /vol1/1000/docker/beets/config:/config
+      - /vol1/1000/music:/music
+      - /vol1/1000/docker/beets/ingest:/downloads
+    ports:
+      - 8337:8337
+    restart: unless-stopped
