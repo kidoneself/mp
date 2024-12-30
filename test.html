@@ -1,0 +1,78 @@
+
+        <!DOCTYPE html>
+        <html lang="zh-CN">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>欢迎页面</title>
+            <style>
+                body {
+                    margin: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f4;
+                }
+                .container {
+                    text-align: center;
+                    padding: 20px;
+                    border: 1px solid #ccc;
+                    background: #fff;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    border-radius: 8px;
+                }
+                a {
+                    color: #007bff;
+                    text-decoration: none;
+                    font-weight: bold;
+                }
+                a:hover {
+                    text-decoration: underline;
+                }
+                button {
+                    margin-top: 10px;
+                    padding: 10px 20px;
+                    font-size: 16px;
+                    border: none;
+                    background-color: #007bff;
+                    color: white;
+                    border-radius: 5px;
+                    cursor: pointer;
+                }
+                button:hover {
+                    background-color: #0056b3;
+                }
+                .success-message {
+                    margin-top: 10px;
+                    color: #28a745;
+                    font-size: 14px;
+                    display: none;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>CookieCloud</h1>
+                <p>点击复制</p>
+                <p id="address">https://cc.naspt.de</p>
+                <button onclick="copyToClipboard()">复制地址</button>
+                <p class="success-message" id="success-message">复制成功！</p>
+            </div>
+            <script>
+                function copyToClipboard() {
+                    const address = document.getElementById('address').textContent;
+                    navigator.clipboard.writeText(address).then(() => {
+                        const successMessage = document.getElementById('success-message');
+                        successMessage.style.display = 'block';
+                        setTimeout(() => {
+                            successMessage.style.display = 'none';
+                        }, 2000); // 2秒后隐藏提示
+                    }).catch(err => {
+                        console.error('复制失败:', err);
+                    });
+                }
+            </script>
+        </body>
+        </html>
