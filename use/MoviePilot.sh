@@ -13,7 +13,6 @@ fi
 PUID="${PUID:-0}"
 PGID="${PGID:-0}"
 UMASK="${UMASK:-022}"
-DOCKER_REGISTRY="docker.nastool.de"
 DEFAULT_DOCKER_PATH=""
 DEFAULT_VIDEO_PATH=""
 
@@ -48,10 +47,13 @@ while [ -z "$HOST_IP" ]; do
     fi
 done
 
+
+
+
 # 获取用户名并设置 USER_ID 和 GROUP_ID
 read -p "请输入nas登录用户名: " USER_NAME
-USER_ID=$(id -u "$USER_NAME")
-GROUP_ID=$(id -g "$USER_NAME")
+USER_ID=$(uid -u "$USER_NAME")
+GROUP_ID=$(gid -g "$USER_NAME")
 
 # 导出环境变量
 export USER_ID
@@ -59,14 +61,12 @@ export GROUP_ID
 export DOCKER_ROOT_PATH
 export VIDEO_ROOT_PATH
 export HOST_IP
-export DOCKER_REGISTRY
 
 # 确保目录结构
 
 
 # 显示设置的配置信息
 echo -e "最终的主机 IP 地址是: $HOST_IP"
-echo -e "Docker 镜像源: $DOCKER_REGISTRY"
 echo -e "Docker 根路径: $DOCKER_ROOT_PATH"
 echo -e "视频文件根路径: $VIDEO_ROOT_PATH"
 echo -e "用户信息：PUID=$USER_ID($USER_NAME) PGID=$GROUP_ID UMASK=022"
@@ -75,7 +75,7 @@ echo -e "用户信息：PUID=$USER_ID($USER_NAME) PGID=$GROUP_ID UMASK=022"
 init_qbittorrent() {
     echo "初始化 qBittorrent"
     mkdir -p "$DOCKER_ROOT_PATH/qb-9000"
-    curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-qb.tgz -o "$CURRENT_DIR/naspt-qb.tgz"
+    curl -L https://naspt.oss-cn-shanghai.aliyuncs.com/MoviePilot/naspt-qb.tgz -o "$CURRENT_DIR/naspt-qb.tgz"
     tar --strip-components=1 -zxvf "$CURRENT_DIR/naspt-qb.tgz" -C "$DOCKER_ROOT_PATH/qb-9000/"
     docker run -d --name qb-9000 --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/qb-9000/config:/config" \
@@ -84,13 +84,13 @@ init_qbittorrent() {
         -e WEBUI_PORT=9000 \
         -e SavePatch="/media/downloads" -e TempPatch="/media/downloads" \
         --network host --privileged \
-        "${DOCKER_REGISTRY:+$DOCKER_REGISTRY/}linuxserver/qbittorrent:4.6.4"
+        "crpi-pqqbvdf8c8dv7tyr.cn-shanghai.personal.cr.aliyuncs.com/nas-mp/qbittorrent:4.6.4"
 }
 
 init_emby() {
     echo "初始化 Emby"
     mkdir -p "$DOCKER_ROOT_PATH/emby"
-    curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-emby.tgz > "$CURRENT_DIR/naspt-emby.tgz"
+    curl -L https://naspt.oss-cn-shanghai.aliyuncs.com/MoviePilot/naspt-emby.tgz > "$CURRENT_DIR/naspt-emby.tgz"
     tar --strip-components=1 -zxvf "$CURRENT_DIR/naspt-emby.tgz" -C "$DOCKER_ROOT_PATH/emby/"
     docker run -d --name emby --restart unless-stopped \
         -v "$DOCKER_ROOT_PATH/emby/config:/config" \
@@ -98,13 +98,13 @@ init_emby() {
         -e UID="$PUID" -e GID="$PGID" -e UMASK="$UMASK" -e TZ=Asia/Shanghai \
         --device /dev/dri:/dev/dri \
         --network host --privileged \
-        "${DOCKER_REGISTRY:+$DOCKER_REGISTRY/}amilys/embyserver:beta"
+        "crpi-pqqbvdf8c8dv7tyr.cn-shanghai.personal.cr.aliyuncs.com/nas-mp/embyserver:beta"
 }
 
 init_chinese_sub_finder() {
     echo "初始化 Chinese-Sub-Finder"
     mkdir -p "$DOCKER_ROOT_PATH/chinese-sub-finder"
-    curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-csf.tgz > "$CURRENT_DIR/naspt-csf.tgz"
+    curl -L https://naspt.oss-cn-shanghai.aliyuncs.com/MoviePilot/naspt-csf.tgz > "$CURRENT_DIR/naspt-csf.tgz"
     tar --strip-components=1 -zxvf "$CURRENT_DIR/naspt-csf.tgz" -C "$DOCKER_ROOT_PATH/chinese-sub-finder/"
     sed -i "s/192.168.2.100/$HOST_IP/g" "$DOCKER_ROOT_PATH/chinese-sub-finder/config/ChineseSubFinderSettings.json"
     docker run -d --name chinese-sub-finder --restart unless-stopped \
@@ -113,7 +113,7 @@ init_chinese_sub_finder() {
         -v "$VIDEO_ROOT_PATH:/media" \
         -e PUID="$PUID" -e PGID="$PGID" -e UMASK="$UMASK" -e TZ=Asia/Shanghai \
         --network host --privileged \
-        "${DOCKER_REGISTRY:+$DOCKER_REGISTRY/}allanpk716/chinesesubfinder:latest"
+        "crpi-pqqbvdf8c8dv7tyr.cn-shanghai.personal.cr.aliyuncs.com/nas-mp/chinesesubfinder:latest"
 }
 
 init_moviepilot() {
@@ -186,7 +186,7 @@ tv:
   剧集/欧美剧集:
 EOF
     # 检查 core.tgz 是否已经存在，如果存在则跳过下载
-    curl -L http://43.134.58.162:1999/d/naspt/v2/naspt-core.tgz -o "$CURRENT_DIR/naspt-core.tgz"
+    curl -L https://naspt.oss-cn-shanghai.aliyuncs.com/MoviePilot/naspt-core.tgz -o "$CURRENT_DIR/naspt-core.tgz"
     tar  --strip-components=1 -zxvf "$CURRENT_DIR/naspt-core.tgz" -C "$DOCKER_ROOT_PATH/moviepilot-v2/core/"
   docker run -d \
       --name moviepilot-v2 \
@@ -205,7 +205,7 @@ EOF
       -e SUPERUSER="admin" \
       -e API_TOKEN="nasptnasptnasptnaspt" \
       --network host \
-      "${DOCKER_REGISTRY:+$DOCKER_REGISTRY/}jxxghp/moviepilot-v2:latest"
+      "crpi-pqqbvdf8c8dv7tyr.cn-shanghai.personal.cr.aliyuncs.com/nas-mp/moviepilot-v2:latest"
       echo "容器启动完成，开始检测是否生成了 user.db 文件..."
       SECONDS=0
   while true; do
@@ -305,44 +305,60 @@ install_service() {
         2) init_emby ;;
         3) init_qbittorrent ;;
         4) init_chinese_sub_finder ;;
-        5) init_owjdxb ;;
-        6) init_database ;;
+        5) init_database ;;
         *)
             echo -e "无效选项：$service_id"
         ;;
     esac
 }
 
-# 主菜单
-while true; do
-    echo "请选择要安装的服务（输入数字组合，如 '1234560' 表示依次安装多个服务）："
-    echo "1. MoviePilot"
-    echo "2. Emby"
-    echo "3. qBittorrent"
-    echo "4. Chinese-Sub-Finder"
-    echo "5. 安装微信通知"
-    echo "6. 初始化数据库"
-    echo "0. 退出"
-    read -p "请输入选择的服务数字组合： " service_choice
-    service_choice="${service_choice:-1234560}"
+      # 配置输入完成后直接开始安装所有服务
+      echo "正在开始安装所有服务..."
 
-    # 输入合法性验证（只允许数字字符）
-    if [[ ! "$service_choice" =~ ^[0-6]+$ ]]; then
-        echo -e "输入无效，请输入有效的数字组合（如12345）。"
-        continue
-    fi
-   if [[ "$service_choice" == "0" ]]; then
-        # 删除 naspt 目录
-        rm -rf "$CURRENT_DIR"
-        # 确保清理工作完成后立即退出脚本
-        echo "安装流程结束！"
-        history -c
-        exit 0
-   fi
+      # 安装 MoviePilot
+      init_moviepilot
 
-    for (( i=0; i<${#service_choice}; i++ )); do
-        service_id="${service_choice:$i:1}"
-        install_service "$service_id"
-    done
-done
+      # 安装 Emby
+      init_emby
+
+      # 安装 qBittorrent
+      init_qbittorrent
+
+      # 安装 Chinese-Sub-Finder
+      init_chinese_sub_finder
+
+      sleep 10
+      # 初始化数据库
+      init_database
+
+      # 删除 naspt 目录
+      rm -rf "$CURRENT_DIR"
+
+      # 输出每个服务的配置信息
+      echo "服务安装已完成，以下是每个服务的访问信息："
+      echo "1. MoviePilot:"
+      echo "   地址: http://$HOST_IP:3000"
+      echo "   账号: admin"
+      echo "   密码: a123456!@"
+      echo
+      echo "2. Emby:"
+      echo "   地址: http://$HOST_IP:8096"
+      echo "   账号: admin"
+      echo "   密码: a123456!@"
+      echo
+      echo "3. qBittorrent:"
+      echo "   地址: http://$HOST_IP:9000"
+      echo "   账号: admin"
+      echo "   密码: a123456!@"
+      echo
+      echo "4. Chinese-Sub-Finder:"
+      echo "   地址: http://$HOST_IP:19035"
+      echo "   账号: admin"
+      echo "   密码: a123456!@"
+      echo
+
+      # 结束脚本
+      history -c
+      echo "安装流程结束！"
+      exit 0
 
